@@ -1,5 +1,3 @@
-from pymysql.cursors import DictCursor
-
 from openmanga import mysql
 
 

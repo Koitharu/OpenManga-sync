@@ -3,7 +3,7 @@ import uuid
 from flask_restful import Resource, reqparse
 from pymysql.cursors import DictCursor
 
-from openmanga import mysql, api, uid_by_token
+from openmanga import mysql, uid_by_token
 
 parser = reqparse.RequestParser()
 parser.add_argument('login', location='form')

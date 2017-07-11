@@ -2,8 +2,8 @@ from flask import json
 from flask_restful import Resource, reqparse
 from pymysql.cursors import DictCursor
 
-from manga import insert_manga
-from openmanga import mysql, api, uid_by_token
+from app.manga import insert_manga
+from openmanga import mysql, uid_by_token
 
 parser = reqparse.RequestParser()
 parser.add_argument('X-AuthToken', location='headers')

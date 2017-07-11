@@ -1,16 +1,16 @@
+#!/usr/bin/python3
+import os
+
 from flask import Flask
 from flask_restful import Api
 from flaskext.mysql import MySQL
 
+from config import Config
+
 mysql = MySQL()
 app = Flask(__name__)
 api = Api(app)
-# MySQL configurations
-app.config['MYSQL_DATABASE_USER'] = 'www'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'qwerty'
-app.config['MYSQL_DATABASE_DB'] = 'openmanga'
-app.config['MYSQL_DATABASE_HOST'] = '192.168.0.222'
-app.config['MYSQL_USE_UNICODE'] = True
+app.config.from_object(Config)
 mysql.init_app(app)
 
 
@@ -30,8 +30,8 @@ def uid_by_token(connection, token):
 
 
 if __name__ == '__main__':
-	from history import History
-	from user import User
+	from app.history import History
+	from app.user import User
 	api.add_resource(User, '/api/user')
 	api.add_resource(History, '/api/history')
-	app.run(host='192.168.0.104')
+	app.run(host=app.config['HOST_IP'])
