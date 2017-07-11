@@ -28,8 +28,8 @@ class History(Resource):
 			for item in data:
 				insert_manga(item)
 				cursor.execute(
-					"INSERT INTO history (user_id, manga_id, chapter, page, size, isweb) VALUES (%s, %s, %s, %s, %s, %s)",
-					(uid, item['id'], item['chapter'], item['page'], 0, item['isweb']))
+					"INSERT INTO history (user_id, manga_id, chapter, page, size, isweb) VALUES (%s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE chapter = %s, page = %s, size = %s, isweb = %s",
+					(uid, item['id'], item['chapter'], item['page'], 0, item['isweb'], item['chapter'], item['page'], 0, item['isweb']))
 			conn.commit()
 			return {'state': 'success'}
 		except Exception as e:
