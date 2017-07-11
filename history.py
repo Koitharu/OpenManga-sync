@@ -55,11 +55,11 @@ class History(Resource):
 				return {'state': 'fail', 'message': 'Invalid token'}
 			if timestamp is None:
 				cursor.execute(
-					"SELECT id, name, subtitle, summary, path, preview, provider, chapter, isweb, page, UNIX_TIMESTAMP(IFNULL(updated_at, created_at)) AS timestamp FROM mangas LEFT JOIN history ON mangas.id = history.manga_id WHERE user_id = %s",
+					"SELECT id, name, subtitle, summary, path, preview, provider, chapter, isweb, page, rating, UNIX_TIMESTAMP(IFNULL(updated_at, created_at)) * 1000 AS timestamp FROM mangas LEFT JOIN history ON mangas.id = history.manga_id WHERE user_id = %s",
 					uid)
 			else:
 				cursor.execute(
-					"SELECT id, name, subtitle, summary, path, preview, provider, chapter, isweb, page, UNIX_TIMESTAMP(IFNULL(updated_at, created_at)) AS timestamp FROM mangas LEFT JOIN history ON mangas.id = history.manga_id WHERE user_id = %s AND (created_at > %s OR updated_at >= %s)",
+					"SELECT id, name, subtitle, summary, path, preview, provider, chapter, isweb, page, rating, UNIX_TIMESTAMP(IFNULL(updated_at, created_at)) * 1000 AS timestamp FROM mangas LEFT JOIN history ON mangas.id = history.manga_id WHERE user_id = %s AND (created_at > %s OR updated_at >= %s)",
 					(uid, timestamp, timestamp))
 			rv = cursor.fetchall()
 			return {'state': 'success', 'data': rv}
