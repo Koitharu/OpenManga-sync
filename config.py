@@ -1,11 +1,6 @@
-import os
-
-
 class Config(object):
-	DEBUG = False
-	MYSQL_DATABASE_USER = 'www'
-	MYSQL_DATABASE_PASSWORD = 'qwerty'
-	MYSQL_DATABASE_DB = 'openmanga'
-	MYSQL_DATABASE_HOST = '192.168.0.222'
-	MYSQL_USE_UNICODE = True
+	DEBUG = True
 	HOST_IP = '192.168.0.104'
+	SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://user:password@server/dbname'
+	SQLALCHEMY_NATIVE_UNICODE = True
+	SQLALCHEMY_ECHO = True
