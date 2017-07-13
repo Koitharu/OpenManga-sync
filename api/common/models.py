@@ -1,6 +1,6 @@
 from sqlalchemy import func
 
-from openmanga import db
+from api.app import db
 
 
 class User(db.Model):

@@ -1,4 +1,4 @@
-release_config.py
+api/release_config.py
 
 # User-specific stuff:
 .idea/**/workspace.xml

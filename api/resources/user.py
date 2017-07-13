@@ -3,9 +3,9 @@ import uuid
 
 from flask_restful import Resource, reqparse, marshal_with
 
-from app.models import User, Token
-from app.schemas import devices_schema, token_schema, base_schema
-from openmanga import db
+from api.app import User, Token
+from api.app import db
+from api.common.schemas import devices_schema, token_schema, base_schema
 
 parser = reqparse.RequestParser()
 parser.add_argument('login')
