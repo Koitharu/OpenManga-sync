@@ -1,5 +1,6 @@
 from flask_restful import fields
 
+
 class Milliseconds(fields.Raw):
 	def format(self, value):
 		return int(value.timestamp() * 1000)
@@ -12,6 +13,7 @@ base_schema = {
 
 devices_schema = {
 	'devices': fields.Nested({
+		'id': fields.Integer,
 		'device': fields.String,
 		'created_at': Milliseconds(attribute='created_at')
 	})
@@ -38,7 +40,7 @@ manga_schema = {
 
 history_item_schema = {
 	'manga': fields.Nested(manga_schema),
-	'timestamp':  Milliseconds(attribute='updated_at'),
+	'timestamp': Milliseconds(attribute='updated_at'),
 	'page': fields.Integer,
 	'chapter': fields.Integer,
 	'size': fields.Integer,

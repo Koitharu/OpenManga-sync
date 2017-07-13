@@ -16,6 +16,7 @@ class User(db.Model):
 
 class Token(db.Model):
 	__tablename__ = 'tokens'
+	id = db.Column(db.Integer, autoincrement=True, nullable=False)
 	token = db.Column(db.String(36), primary_key=True, nullable=False)
 	user_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True, nullable=False)
 	device = db.Column(db.String(32), nullable=False)

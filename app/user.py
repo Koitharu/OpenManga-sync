@@ -4,11 +4,12 @@ import uuid
 from flask_restful import Resource, reqparse, fields, marshal_with
 
 from app.models import User, Token
-from app.schemas import devices_schema, token_schema
+from app.schemas import devices_schema, token_schema, base_schema
 from openmanga import db
 
 parser = reqparse.RequestParser()
 parser.add_argument('login')
+parser.add_argument('id')
 parser.add_argument('password')
 parser.add_argument('device')
 parser.add_argument('X-AuthToken', location='headers')
@@ -52,6 +53,23 @@ class UserApi(Resource):
 			db.session.add(new_token)
 			db.session.commit()
 			return {'token': new_token.token}
+		except Exception as e:
+			db.session.rollback()
+			return {'state': 'fail', 'message': str(e)}
+
+	@marshal_with(base_schema)
+	def delete(self):
+		try:
+			args = parser.parse_args()
+			user = Token.query.get(args['X-AuthToken']).user
+			token_rm = Token.query.filter(Token.id == args['id']).one_or_none()
+			if token_rm is None:
+				return {'state': 'fail', 'message': 'Invalid device id'}
+			if user.id != token_rm.user.id:
+				return {'state': 'fail', 'message': 'Invalid token'}
+			db.session.delete(token_rm)
+			db.session.commit()
+			return {}
 		except Exception as e:
 			db.session.rollback()
 			return {'state': 'fail', 'message': str(e)}
