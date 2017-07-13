@@ -3,8 +3,8 @@ from datetime import datetime
 from flask import json
 from flask_restful import Resource, reqparse, marshal_with
 
-from api.app import Token, History, Manga
 from api.app import db
+from api.common.models import History, Token, Manga
 from api.common.schemas import history_schema
 
 parser = reqparse.RequestParser()

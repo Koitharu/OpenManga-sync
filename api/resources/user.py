@@ -3,8 +3,8 @@ import uuid
 
 from flask_restful import Resource, reqparse, marshal_with
 
-from api.app import User, Token
 from api.app import db
+from api.common.models import Token, User
 from api.common.schemas import devices_schema, token_schema, base_schema
 
 parser = reqparse.RequestParser()
