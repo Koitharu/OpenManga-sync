@@ -1,7 +1,7 @@
 import hashlib
 import uuid
 
-from flask_restful import Resource, reqparse, fields, marshal_with
+from flask_restful import Resource, reqparse, marshal_with
 
 from app.models import User, Token
 from app.schemas import devices_schema, token_schema, base_schema
@@ -24,7 +24,7 @@ class UserApi(Resource):
 			tokens = Token.query.get(token).user.tokens
 			return {'devices': tokens}
 		except Exception as e:
-			return {'state': 'fail', 'message': str(e)}
+			return {'state': 'fail', 'message': str(e)}, 500
 
 	@marshal_with(token_schema)
 	def post(self):
@@ -40,7 +40,7 @@ class UserApi(Resource):
 			return {'token': new_token.token}
 		except Exception as e:
 			db.session.rollback()
-			return {'state': 'fail', 'message': str(e)}
+			return {'state': 'fail', 'message': str(e)}, 500
 
 	@marshal_with(token_schema)
 	def put(self):
@@ -55,7 +55,7 @@ class UserApi(Resource):
 			return {'token': new_token.token}
 		except Exception as e:
 			db.session.rollback()
-			return {'state': 'fail', 'message': str(e)}
+			return {'state': 'fail', 'message': str(e)}, 500
 
 	@marshal_with(base_schema)
 	def delete(self):
@@ -64,12 +64,12 @@ class UserApi(Resource):
 			user = Token.query.get(args['X-AuthToken']).user
 			token_rm = Token.query.filter(Token.id == args['id']).one_or_none()
 			if token_rm is None:
-				return {'state': 'fail', 'message': 'Invalid device id'}
+				return {'state': 'fail', 'message': 'Invalid device id'},
 			if user.id != token_rm.user.id:
-				return {'state': 'fail', 'message': 'Invalid token'}
+				return {'state': 'fail', 'message': 'Invalid token'}, 403
 			db.session.delete(token_rm)
 			db.session.commit()
 			return {}
 		except Exception as e:
 			db.session.rollback()
-			return {'state': 'fail', 'message': str(e)}
+			return {'state': 'fail', 'message': str(e)}, 500

@@ -1,6 +1,4 @@
-import datetime
-
-from sqlalchemy import func, TypeDecorator, types
+from sqlalchemy import func
 
 from openmanga import db
 
@@ -11,7 +9,7 @@ class User(db.Model):
 	login = db.Column(db.String(32), index=True, unique=True)
 	password = db.Column(db.String(32), nullable=False)
 	created_at = db.Column(db.TIMESTAMP, nullable=False, default=func.current_timestamp())
-	tokens = db.relationship('Token', backref='user') #, lazy='dynamic'
+	tokens = db.relationship('Token', backref='user')  # , lazy='dynamic'
 
 
 class Token(db.Model):

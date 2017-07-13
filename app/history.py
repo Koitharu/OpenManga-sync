@@ -1,10 +1,10 @@
 from datetime import datetime
 
 from flask import json
-from flask_restful import Resource, reqparse, marshal_with, marshal
+from flask_restful import Resource, reqparse, marshal_with
 
 from app.models import Token, History, Manga
-from app.schemas import history_schema, history_item_schema
+from app.schemas import history_schema
 from openmanga import db
 
 parser = reqparse.RequestParser()
@@ -23,7 +23,7 @@ class HistoryApi(Resource):
 			history = History.query.filter(History.user_id == user.id).all()
 			return {'all': history}
 		except Exception as e:
-			return {'state': 'fail', 'message': str(e)}
+			return {'state': 'fail', 'message': str(e)}, 500
 
 	@marshal_with(history_schema)
 	def post(self):
@@ -40,7 +40,7 @@ class HistoryApi(Resource):
 			client_updated = json.loads(args['updated'])
 
 			for item in client_updated:
-				item['updated_at'] = datetime.fromtimestamp(item['timestamp']/1000.0)
+				item['updated_at'] = datetime.fromtimestamp(item['timestamp'] / 1000.0)
 				item.pop('timestamp', None)
 				obj = History(**item)
 				obj.manga = Manga(**item['manga'])
@@ -67,4 +67,4 @@ class HistoryApi(Resource):
 			return {'updated': updated}
 		except Exception as e:
 			db.session.rollback()
-			return {'state': 'fail', 'message': str(e)}
+			return {'state': 'fail', 'message': str(e)}, 500
