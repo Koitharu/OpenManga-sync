@@ -20,8 +20,8 @@ class UserApi(Resource):
 	def get(self):
 		try:
 			args = parser.parse_args()
-			token = args['X-AuthToken']
-			tokens = Token.query.get(token).user.tokens
+			user = Token.query.get(args['X-AuthToken']).user
+			tokens = Token.query.filter(Token.user_id == user.id).order_by(Token.created_at.desc()).all()
 			return {'devices': tokens}
 		except Exception as e:
 			return {'state': 'fail', 'message': str(e)}, 500
