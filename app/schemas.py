@@ -1,40 +1,53 @@
-from marshmallow import Schema, fields, post_load
+from flask_restful import fields
 
-from app.models import Manga, History
-
-
-class DeviceSchema(Schema):
-	created_at = fields.Function(lambda obj: int(obj.created_at.timestamp() * 100))
-
-	class Meta:
-		fields = ("device", "created_at")
+class Milliseconds(fields.Raw):
+	def format(self, value):
+		return int(value.timestamp() * 1000)
 
 
-class MangaSchema(Schema):
-	id = fields.Integer()
-	name = fields.String()
-	subtitle = fields.String()
-	summary = fields.String()
-	path = fields.String()
-	preview = fields.String()
-	provider = fields.String()
-	rating = fields.Integer()
+base_schema = {
+	'state': fields.String(default='success'),
+	'message': fields.String(default='')
+}
 
-	@post_load
-	def make_user(self, data):
-		return Manga(**data)
+devices_schema = {
+	'devices': fields.Nested({
+		'device': fields.String,
+		'created_at': Milliseconds(attribute='created_at')
+	})
+}
 
-	class Meta:
-		fields = ("id", "name", "subtitle", "summary", "preview", "provider", "path", "rating")
+devices_schema.update(base_schema)
 
+token_schema = {
+	'token': fields.String
+}
 
-class HistorySchema(Schema):
-	manga = fields.Nested(MangaSchema)
-	timestamp = fields.Function(lambda obj: int(obj.updated_at.timestamp() * 100))
+token_schema.update(base_schema)
 
-	@post_load
-	def make_user(self, data):
-		return History(**data)
+manga_schema = {
+	'id': fields.Integer,
+	'name': fields.String,
+	'subtitle': fields.String,
+	'summary': fields.String,
+	'path': fields.String,
+	'preview': fields.String,
+	'provider': fields.String,
+	'rating': fields.Integer
+}
 
-	class Meta:
-		fields = ("chapter", "page", "size", "isweb", "timestamp", "manga")
+history_item_schema = {
+	'manga': fields.Nested(manga_schema),
+	'timestamp':  Milliseconds(attribute='updated_at'),
+	'page': fields.Integer,
+	'chapter': fields.Integer,
+	'size': fields.Integer,
+	'isweb': fields.Integer
+}
+
+history_schema = {
+	'all': fields.Nested(history_item_schema),
+	'updated': fields.Nested(history_item_schema)
+}
+
+history_schema.update(base_schema)

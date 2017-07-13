@@ -1,10 +1,10 @@
 import hashlib
 import uuid
 
-from flask_restful import Resource, reqparse
+from flask_restful import Resource, reqparse, fields, marshal_with
 
 from app.models import User, Token
-from app.schemas import DeviceSchema
+from app.schemas import devices_schema, token_schema
 from openmanga import db
 
 parser = reqparse.RequestParser()
@@ -15,16 +15,17 @@ parser.add_argument('X-AuthToken', location='headers')
 
 
 class UserApi(Resource):
+	@marshal_with(devices_schema)
 	def get(self):
 		try:
 			args = parser.parse_args()
 			token = args['X-AuthToken']
 			tokens = Token.query.get(token).user.tokens
-			schema = DeviceSchema(many=True)
-			return {'state': 'success', 'devices': schema.dumps(tokens).data}
+			return {'devices': tokens}
 		except Exception as e:
 			return {'state': 'fail', 'message': str(e)}
 
+	@marshal_with(token_schema)
 	def post(self):
 		try:
 			args = parser.parse_args()
@@ -35,11 +36,12 @@ class UserApi(Resource):
 			new_token = Token(token=str(uuid.uuid4()), user_id=user.id, device=args['device'])
 			db.session.add(new_token)
 			db.session.commit()
-			return {'state': 'success', 'token': new_token.token}
+			return {'token': new_token.token}
 		except Exception as e:
 			db.session.rollback()
 			return {'state': 'fail', 'message': str(e)}
 
+	@marshal_with(token_schema)
 	def put(self):
 		try:
 			args = parser.parse_args()
@@ -49,7 +51,7 @@ class UserApi(Resource):
 			new_token = Token(token=str(uuid.uuid4()), user=new_user, device=args['device'])
 			db.session.add(new_token)
 			db.session.commit()
-			return {'state': 'success', 'token': new_token.token}
+			return {'token': new_token.token}
 		except Exception as e:
 			db.session.rollback()
 			return {'state': 'fail', 'message': str(e)}
