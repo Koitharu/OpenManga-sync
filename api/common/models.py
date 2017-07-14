@@ -44,7 +44,7 @@ class History(db.Model):
 	page = db.Column(db.Integer, nullable=False)
 	size = db.Column(db.Integer, nullable=False)
 	isweb = db.Column(db.SmallInteger, nullable=False)
-	manga = db.relationship('Manga')
+	manga = db.relationship('Manga', cascade="merge")
 
 
 class Favourite(db.Model):
@@ -52,7 +52,7 @@ class Favourite(db.Model):
 	user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True, nullable=False)
 	manga_id = db.Column(db.Integer, db.ForeignKey('mangas.id'), primary_key=True, nullable=False)
 	updated_at = db.Column(db.TIMESTAMP, nullable=False, default=func.current_timestamp())
-	manga = db.relationship('Manga')
+	manga = db.relationship('Manga', cascade="merge")
 
 
 class Deleted(db.Model):
