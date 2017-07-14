@@ -53,3 +53,11 @@ class Favourite(db.Model):
 	manga_id = db.Column(db.Integer, db.ForeignKey('mangas.id'), primary_key=True, nullable=False)
 	updated_at = db.Column(db.TIMESTAMP, nullable=False, default=func.current_timestamp())
 	manga = db.relationship('Manga')
+
+
+class Deleted(db.Model):
+	__tablename__ = 'deleted'
+	user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True, nullable=False)
+	manga_id = db.Column(db.Integer, db.ForeignKey('mangas.id'), primary_key=True, nullable=False)
+	subject = db.Column(db.Enum('history', 'favourites'), nullable=False)
+	deleted_at = db.Column(db.TIMESTAMP, nullable=False, default=func.current_timestamp())

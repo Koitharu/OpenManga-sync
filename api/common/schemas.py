@@ -38,6 +38,11 @@ manga_schema = {
 	'rating': fields.Integer
 }
 
+deleted_item_schema = {
+	'manga_id': fields.Integer,
+	'deleted_at': Milliseconds(attribute='deleted_at')
+}
+
 history_item_schema = {
 	'manga': fields.Nested(manga_schema),
 	'timestamp': Milliseconds(attribute='updated_at'),
@@ -49,7 +54,8 @@ history_item_schema = {
 
 history_schema = {
 	'all': fields.Nested(history_item_schema),
-	'updated': fields.Nested(history_item_schema)
+	'updated': fields.Nested(history_item_schema),
+	'deleted': fields.Nested(deleted_item_schema)
 }
 
 history_schema.update(base_schema)
@@ -61,7 +67,8 @@ favourites_item_schema = {
 
 favourites_schema = {
 	'all': fields.Nested(history_item_schema),
-	'updated': fields.Nested(history_item_schema)
+	'updated': fields.Nested(history_item_schema),
+	'deleted': fields.Nested(deleted_item_schema)
 }
 
 favourites_schema.update(base_schema)
