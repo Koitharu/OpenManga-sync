@@ -53,3 +53,15 @@ history_schema = {
 }
 
 history_schema.update(base_schema)
+
+favourites_item_schema = {
+	'manga': fields.Nested(manga_schema),
+	'timestamp': Milliseconds(attribute='updated_at')
+}
+
+favourites_schema = {
+	'all': fields.Nested(history_item_schema),
+	'updated': fields.Nested(history_item_schema)
+}
+
+favourites_schema.update(base_schema)
