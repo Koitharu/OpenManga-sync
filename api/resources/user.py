@@ -12,6 +12,7 @@ parser.add_argument('login')
 parser.add_argument('id')
 parser.add_argument('password')
 parser.add_argument('device')
+parser.add_argument('self', type=int, choices=(0, 1), default=0)
 parser.add_argument('X-AuthToken', location='headers')
 
 
@@ -21,7 +22,10 @@ class UserApi(Resource):
 		try:
 			args = parser.parse_args()
 			user = Token.query.get(args['X-AuthToken']).user
-			tokens = Token.query.filter(Token.user_id == user.id).order_by(Token.created_at.desc()).all()
+			tokens = Token.query.filter(Token.user_id == user.id)
+			if args['self'] == 0:
+				tokens = tokens.filter(Token.token != args['X-AuthToken'])
+			tokens = tokens.order_by(Token.created_at.desc()).all()
 			return {'devices': tokens}
 		except Exception as e:
 			return {'state': 'fail', 'message': str(e)}, 500
