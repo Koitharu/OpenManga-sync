@@ -25,6 +25,7 @@ class HistoryApi(Resource):
 			history = History.query.filter(History.user_id == user.id).all()
 			return {'all': history}
 		except Exception as e:
+			print(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
 	@marshal_with(history_schema)
@@ -41,7 +42,7 @@ class HistoryApi(Resource):
 				history = history.filter(History.updated_at > last_sync)
 			updated = history.all()
 
-			deleted = Deleted.query.filter(Deleted.user_id == user.id)
+			deleted = Deleted.query.filter(Deleted.subject == 'history', Deleted.user_id == user.id)
 			if last_sync is not None:
 				deleted = deleted.filter(Deleted.deleted_at > last_sync)
 			deleted = deleted.all()
@@ -82,6 +83,7 @@ class HistoryApi(Resource):
 					db.session.add(obj)
 				else:
 					udeleted.deleted_at = obj.deleted_at
+				db.session.flush()
 				History.query.filter(History.manga_id == obj.manga_id, History.user_id == obj.user_id).delete()
 
 				db.session.flush()
@@ -91,5 +93,6 @@ class HistoryApi(Resource):
 			db.session.commit()
 			return {'updated': updated, 'deleted': deleted}
 		except Exception as e:
+			print(e)
 			db.session.rollback()
 			return {'state': 'fail', 'message': str(e)}, 500

@@ -12,11 +12,11 @@ base_schema = {
 }
 
 devices_schema = {
-	'devices': fields.Nested({
+	'devices': fields.List(fields.Nested({
 		'id': fields.Integer,
 		'device': fields.String,
 		'created_at': Milliseconds(attribute='created_at')
-	})
+	}), default=[])
 }
 
 devices_schema.update(base_schema)
@@ -53,9 +53,9 @@ history_item_schema = {
 }
 
 history_schema = {
-	'all': fields.Nested(history_item_schema),
-	'updated': fields.Nested(history_item_schema),
-	'deleted': fields.Nested(deleted_item_schema)
+	'all': fields.List(fields.Nested(history_item_schema, default=[]), default=[]),
+	'updated': fields.List(fields.Nested(history_item_schema, default=[]), default=[]),
+	'deleted': fields.List(fields.Nested(deleted_item_schema, default=[]), default=[])
 }
 
 history_schema.update(base_schema)
@@ -66,9 +66,9 @@ favourites_item_schema = {
 }
 
 favourites_schema = {
-	'all': fields.Nested(history_item_schema),
-	'updated': fields.Nested(history_item_schema),
-	'deleted': fields.Nested(deleted_item_schema)
+	'all': fields.List(fields.Nested(history_item_schema, default=[]), default=[]),
+	'updated': fields.List(fields.Nested(history_item_schema, default=[]), default=[]),
+	'deleted': fields.List(fields.Nested(deleted_item_schema, default=[]), default=[])
 }
 
 favourites_schema.update(base_schema)

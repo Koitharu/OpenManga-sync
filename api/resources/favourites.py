@@ -4,7 +4,7 @@ from flask import json
 from flask_restful import Resource, reqparse, marshal_with
 
 from api.app import db
-from api.common.models import History, Token, Manga, Favourite
+from api.common.models import History, Token, Manga, Favourite, Deleted
 from api.common.schemas import history_schema, favourites_schema
 
 parser = reqparse.RequestParser()
@@ -25,6 +25,7 @@ class FavouritesApi(Resource):
 			favourites = Favourite.query.filter(Favourite.user_id == user.id).all()
 			return {'all': favourites}
 		except Exception as e:
+			print(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
 	@marshal_with(favourites_schema)
@@ -40,6 +41,11 @@ class FavouritesApi(Resource):
 			if last_sync is not None:
 				favourites = favourites.filter(Favourite.updated_at > last_sync)
 			updated = favourites.all()
+
+			deleted = Deleted.query.filter(Deleted.subject == 'favourites', Deleted.user_id == user.id)
+			if last_sync is not None:
+				deleted = deleted.filter(Deleted.deleted_at > last_sync)
+			deleted = deleted.all()
 
 			client_updated = json.loads(args['updated'])
 
@@ -61,10 +67,29 @@ class FavouritesApi(Resource):
 					fav.updated_at = obj.updated_at
 				db.session.flush()
 
+			client_deleted = json.loads(args['deleted'])
+			for item in client_deleted:
+				item['deleted_at'] = datetime.fromtimestamp(item['timestamp'] / 1000.0)
+				item.pop('timestamp', None)
+				obj = Deleted(**item)
+				obj.user_id = user.id
+				obj.subject = 'favourites'
+				udeleted = Deleted.query.filter(Deleted.manga_id == obj.manga_id,
+												Deleted.user_id == obj.user_id).first()
+				if udeleted is None:
+					db.session.add(obj)
+				else:
+					udeleted.deleted_at = obj.deleted_at
+				db.session.flush()
+				Favourite.query.filter(Favourite.manga_id == obj.manga_id, Favourite.user_id == obj.user_id).delete()
+
+				db.session.flush()
+
 			token.last_sync_favourites = datetime.now()
 			db.session.flush()
 			db.session.commit()
-			return {'updated': updated}
+			return {'updated': updated, 'deleted': deleted}
 		except Exception as e:
+			print(e)
 			db.session.rollback()
 			return {'state': 'fail', 'message': str(e)}, 500

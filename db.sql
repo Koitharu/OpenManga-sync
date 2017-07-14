@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 14, 2017 at 12:00 PM
+-- Generation Time: Jul 14, 2017 at 01:20 PM
 -- Server version: 10.1.21-MariaDB
 -- PHP Version: 7.0.19
 
@@ -185,7 +185,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `tokens`
 --
 ALTER TABLE `tokens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 --
 -- AUTO_INCREMENT for table `users`
 --
@@ -199,8 +199,7 @@ ALTER TABLE `users`
 -- Constraints for table `deleted`
 --
 ALTER TABLE `deleted`
-  ADD CONSTRAINT `deleted_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `deleted_ibfk_2` FOREIGN KEY (`manga_id`) REFERENCES `mangas` (`id`);
+  ADD CONSTRAINT `deleted_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `favourites`
