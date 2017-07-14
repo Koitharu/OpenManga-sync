@@ -3,9 +3,9 @@ from datetime import datetime
 from flask import json
 from flask_restful import Resource, reqparse, marshal_with
 
-from api.app import db
-from api.common.models import History, Token, Manga, Deleted
-from api.common.schemas import history_schema
+from app import db
+from common.models import History, Token, Manga, Deleted
+from common.schemas import history_schema
 
 parser = reqparse.RequestParser()
 parser.add_argument('X-AuthToken', location='headers')
