@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 13, 2017 at 02:13 PM
+-- Generation Time: Jul 14, 2017 at 12:00 PM
 -- Server version: 10.1.21-MariaDB
 -- PHP Version: 7.0.19
 
@@ -42,8 +42,16 @@ CREATE TABLE `deleted` (
 CREATE TABLE `favourites` (
   `user_id` int(11) NOT NULL,
   `manga_id` int(11) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Triggers `favourites`
+--
+DELIMITER $$
+CREATE TRIGGER `manga_clean_from_fav` AFTER DELETE ON `favourites` FOR EACH ROW DELETE FROM mangas WHERE id NOT IN (SELECT manga_id FROM history UNION SELECT manga_id FROM favourites UNION SELECT manga_id FROM deleted)
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -65,7 +73,7 @@ CREATE TABLE `history` (
 -- Triggers `history`
 --
 DELIMITER $$
-CREATE TRIGGER `mangas_clean` AFTER DELETE ON `history` FOR EACH ROW DELETE FROM mangas WHERE id NOT IN (SELECT manga_id FROM history UNION SELECT manga_id FROM favourites)
+CREATE TRIGGER `manga_clean_from_hist` AFTER DELETE ON `history` FOR EACH ROW DELETE FROM mangas WHERE id NOT IN (SELECT manga_id FROM history UNION SELECT manga_id FROM favourites UNION SELECT manga_id FROM deleted)
 $$
 DELIMITER ;
 
@@ -101,6 +109,14 @@ CREATE TABLE `tokens` (
   `last_sync_history` timestamp NULL DEFAULT NULL,
   `last_sync_favourites` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Triggers `tokens`
+--
+DELIMITER $$
+CREATE TRIGGER `deleted_clean` AFTER UPDATE ON `tokens` FOR EACH ROW DELETE FROM deleted WHERE (subject = 'history' AND NOT EXISTS(SELECT 1 FROM tokens WHERE tokens.user_id = deleted.user_id AND tokens.last_sync_history < deleted.deleted_at)) OR (subject = 'favourites' AND NOT EXISTS(SELECT 1 FROM tokens WHERE tokens.user_id = deleted.user_id AND tokens.last_sync_favourites < deleted.deleted_at))
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -169,7 +185,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `tokens`
 --
 ALTER TABLE `tokens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 --
 -- AUTO_INCREMENT for table `users`
 --
