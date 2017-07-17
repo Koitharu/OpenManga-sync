@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-import os
-import logging
+
 from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api
@@ -8,15 +7,16 @@ from flask_sqlalchemy import SQLAlchemy
 
 from release_config import ReleaseConfig
 
-logdir = os.path.dirname(os.path.realpath(__file__)) + u'/../logs/'
-logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d] %(levelname)-8s [%(asctime)s]  %(message)s',
-					level=logging.DEBUG, filename=logdir + u'main.log')
+# logdir = os.path.dirname(os.path.realpath(__file__)) + u'/../logs/'
+# logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d] %(levelname)-8s [%(asctime)s]  %(message)s',
+#					level=logging.DEBUG, filename=logdir + u'main.log')
 
 app = Flask(__name__)
 api = Api(app)
 app.config.from_object(ReleaseConfig)
 db = SQLAlchemy(app)
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+
 
 if __name__ == '__main__':
 	from resources.user import UserApi

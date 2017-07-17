@@ -5,11 +5,11 @@ from flask import json
 from flask_restful import Resource, reqparse, marshal_with
 
 from app import db
+from common.auth import auth_required
 from common.models import History, Token, Manga, Deleted
 from common.schemas import history_schema, base_schema
 
 parser = reqparse.RequestParser()
-parser.add_argument('X-AuthToken', location='headers')
 parser.add_argument('updated')
 parser.add_argument('deleted')
 parser.add_argument('id', type=int)
@@ -20,14 +20,10 @@ logger = logging.getLogger(__name__)
 class HistoryApi(Resource):
 	# get all history
 	@marshal_with(history_schema)
-	def get(self):
+	@auth_required
+	def get(self, token):
 		try:
-			args = parser.parse_args()
-			token = Token.query.get(args['X-AuthToken'])
-			if token is None:
-				return {'state': 'fail', 'message': 'Invalid token'}, 403
-			user = token.user
-			history = History.query.filter(History.user_id == user.id).all()
+			history = History.query.filter(History.user_id == token.user_id).all()
 			return {'all': history}
 		except Exception as e:
 			logger.error(e)
@@ -35,12 +31,10 @@ class HistoryApi(Resource):
 
 	# data synchronization - post and get updates
 	@marshal_with(history_schema)
-	def post(self):
+	@auth_required
+	def post(self, token):
 		try:
 			args = parser.parse_args()
-			token = Token.query.get(args['X-AuthToken'])
-			if token is None:
-				return {'state': 'fail', 'message': 'Invalid token'}, 403
 			user = token.user
 			last_sync = token.last_sync_history
 			history = History.query.filter(History.user_id == user.id)
@@ -105,12 +99,10 @@ class HistoryApi(Resource):
 
 	# delete one item from history
 	@marshal_with(base_schema)
-	def delete(self):
+	@auth_required
+	def delete(self, token):
 		try:
 			args = parser.parse_args()
-			token = Token.query.get(args['X-AuthToken'])
-			if token is None:
-				return {'state': 'fail', 'message': 'Invalid token'}, 403
 			user = token.user
 			manga_id = args['id']
 

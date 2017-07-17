@@ -5,9 +5,9 @@ import logging
 from datetime import datetime
 
 from flask_restful import Resource, reqparse, marshal_with
-from werkzeug import item
 
 from app import db
+from common.auth import auth_required
 from common.models import Token, User
 from common.schemas import devices_schema, token_schema, base_schema
 
@@ -18,7 +18,6 @@ parser.add_argument('password')
 parser.add_argument('device')
 parser.add_argument('self', type=int, choices=(0, 1), default=0)
 parser.add_argument('expires', type=int)
-parser.add_argument('X-AuthToken', location='headers')
 
 logger = logging.getLogger(__name__)
 
@@ -26,13 +25,14 @@ logger = logging.getLogger(__name__)
 class UserApi(Resource):
 	# get all user sessions
 	@marshal_with(devices_schema)
-	def get(self):
+	@auth_required
+	def get(self, token):
 		try:
 			args = parser.parse_args()
-			user = Token.query.get(args['X-AuthToken']).user
+			user = token.user
 			tokens = Token.query.filter(Token.user_id == user.id)
 			if args['self'] == 0:
-				tokens = tokens.filter(Token.token != args['X-AuthToken'])
+				tokens = tokens.filter(Token.token != token.token)
 			tokens = tokens.order_by(Token.created_at.desc()).all()
 			return {'devices': tokens}
 		except Exception as e:
@@ -81,10 +81,10 @@ class UserApi(Resource):
 
 	# close session(remove token)
 	@marshal_with(base_schema)
-	def delete(self):
+	@auth_required
+	def delete(self, token):
 		try:
 			args = parser.parse_args()
-			token = Token.query.get(args['X-AuthToken'])
 			user = token.user
 			if args['self'] == 1:
 				token_rm = token
