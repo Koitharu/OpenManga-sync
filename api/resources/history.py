@@ -6,17 +6,19 @@ from flask_restful import Resource, reqparse, marshal_with
 
 from app import db
 from common.models import History, Token, Manga, Deleted
-from common.schemas import history_schema
+from common.schemas import history_schema, base_schema
 
 parser = reqparse.RequestParser()
 parser.add_argument('X-AuthToken', location='headers')
 parser.add_argument('updated')
 parser.add_argument('deleted')
+parser.add_argument('id', type=int)
 
 logger = logging.getLogger(__name__)
 
 
 class HistoryApi(Resource):
+	# get all history
 	@marshal_with(history_schema)
 	def get(self):
 		try:
@@ -31,6 +33,7 @@ class HistoryApi(Resource):
 			logger.error(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
+	# data synchronization - post and get updates
 	@marshal_with(history_schema)
 	def post(self):
 		try:
@@ -98,4 +101,31 @@ class HistoryApi(Resource):
 		except Exception as e:
 			db.session.rollback()
 			logger.exception(e)
+			return {'state': 'fail', 'message': str(e)}, 500
+
+	# delete one item from history
+	@marshal_with(base_schema)
+	def delete(self):
+		try:
+			args = parser.parse_args()
+			token = Token.query.get(args['X-AuthToken'])
+			if token is None:
+				return {'state': 'fail', 'message': 'Invalid token'}, 403
+			user = token.user
+			manga_id = args['id']
+
+			deleted = History.query.filter(History.manga_id == manga_id).delete()
+			if deleted > 0:
+				obj = Deleted()
+				obj.manga_id = manga_id
+				obj.user_id = user.id
+				obj.subject = 'history'
+				obj.deleted_at = datetime.now()
+				db.session.add(obj)
+
+			db.session.flush()
+			db.session.commit()
+		except Exception as e:
+			logger.error(e)
+			db.session.rollback()
 			return {'state': 'fail', 'message': str(e)}, 500
