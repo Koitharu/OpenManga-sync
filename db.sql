@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 14, 2017 at 01:20 PM
+-- Generation Time: Jul 17, 2017 at 11:37 AM
 -- Server version: 10.1.21-MariaDB
 -- PHP Version: 7.0.19
 
@@ -106,6 +106,7 @@ CREATE TABLE `tokens` (
   `user_id` int(11) NOT NULL,
   `device` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `expires_at` timestamp NULL DEFAULT NULL,
   `last_sync_history` timestamp NULL DEFAULT NULL,
   `last_sync_favourites` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -185,7 +186,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `tokens`
 --
 ALTER TABLE `tokens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 --
 -- AUTO_INCREMENT for table `users`
 --
