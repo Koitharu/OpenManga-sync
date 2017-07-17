@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class UserApi(Resource):
+	# get all user sessions
 	@marshal_with(devices_schema)
 	def get(self):
 		try:
@@ -34,6 +35,7 @@ class UserApi(Resource):
 			logger.error(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
+	# sign in
 	@marshal_with(token_schema)
 	def post(self):
 		try:
@@ -52,6 +54,7 @@ class UserApi(Resource):
 			db.session.rollback()
 			return {'state': 'fail', 'message': str(e)}, 500
 
+	# sign up
 	@marshal_with(token_schema)
 	def put(self):
 		try:
@@ -68,14 +71,19 @@ class UserApi(Resource):
 			logger.error(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
+	# close session(remove token)
 	@marshal_with(base_schema)
 	def delete(self):
 		try:
 			args = parser.parse_args()
-			user = Token.query.get(args['X-AuthToken']).user
-			token_rm = Token.query.filter(Token.id == args['id']).one_or_none()
+			token = Token.query.get(args['X-AuthToken'])
+			user = token.user
+			if args['self'] == 1:
+				token_rm = token
+			else:
+				token_rm = Token.query.filter(Token.id == args['id']).one_or_none()
 			if token_rm is None:
-				return {'state': 'fail', 'message': 'Invalid device id'},
+				return {'state': 'fail', 'message': 'Invalid device id'}, 400
 			if user.id != token_rm.user.id:
 				return {'state': 'fail', 'message': 'Invalid token'}, 403
 			db.session.delete(token_rm)
