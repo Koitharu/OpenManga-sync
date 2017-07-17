@@ -3,7 +3,7 @@ from functools import wraps
 
 from flask import request
 
-from app import db
+from app import db, log
 from common.models import Token
 
 
@@ -24,6 +24,7 @@ def auth_required(f):
 				return {'state': 'fail', 'message': 'Token was expired'}, 403
 			return f(token=token, *args, **kwargs)
 		except Exception as e:
+			log.exception(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
 	return decorated

@@ -1,12 +1,10 @@
 import hashlib
 import uuid
-
-import logging
 from datetime import datetime
 
 from flask_restful import Resource, reqparse, marshal_with
 
-from app import db
+from app import db, log
 from common.auth import auth_required
 from common.models import Token, User
 from common.schemas import devices_schema, token_schema, base_schema
@@ -19,7 +17,6 @@ parser.add_argument('device')
 parser.add_argument('self', type=int, choices=(0, 1), default=0)
 parser.add_argument('expires', type=int)
 
-logger = logging.getLogger(__name__)
 
 
 class UserApi(Resource):
@@ -36,7 +33,7 @@ class UserApi(Resource):
 			tokens = tokens.order_by(Token.created_at.desc()).all()
 			return {'devices': tokens}
 		except Exception as e:
-			logger.error(e)
+			log.exception(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
 	# sign in
@@ -47,17 +44,18 @@ class UserApi(Resource):
 			pass_md5 = hashlib.md5(args['password'].encode('utf-8')).hexdigest()
 			user = User.query.filter(User.login == args['login'], User.password == pass_md5).one_or_none()
 			if user is None:
-				logger.info("Invalid login/password")
+				log.info("Invalid login/password")
 				return {'state': 'fail', 'message': 'No such user or password invalid'}
 			new_token = Token(token=str(uuid.uuid4()), user_id=user.id, device=args['device'])
 			if args['expires'] is not None:
 				new_token.expires_at = datetime.fromtimestamp(args['expires'] / 1000.0)
 			db.session.add(new_token)
 			db.session.commit()
-			logger.info("Created new token: %s" % new_token.token)
+			log.info("Created new token: %s" % new_token.token)
 			return {'token': new_token.token}
 		except Exception as e:
 			db.session.rollback()
+			log.exception(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
 	# sign up
@@ -76,7 +74,7 @@ class UserApi(Resource):
 			return {'token': new_token.token}
 		except Exception as e:
 			db.session.rollback()
-			logger.error(e)
+			log.error(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
 	# close session(remove token)
@@ -99,5 +97,5 @@ class UserApi(Resource):
 			return {}
 		except Exception as e:
 			db.session.rollback()
-			logger.error(e)
+			log.exception(e)
 			return {'state': 'fail', 'message': str(e)}, 500

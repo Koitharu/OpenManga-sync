@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import json
 from flask_restful import Resource, reqparse, marshal_with
 
-from app import db
+from app import db, log
 from common.auth import auth_required
 from common.models import Token, Manga, Favourite, Deleted
 from common.schemas import favourites_schema, base_schema
@@ -13,8 +13,6 @@ parser = reqparse.RequestParser()
 parser.add_argument('updated')
 parser.add_argument('deleted')
 parser.add_argument('id', type=int)
-
-logger = logging.getLogger(__name__)
 
 
 class FavouritesApi(Resource):
@@ -27,7 +25,7 @@ class FavouritesApi(Resource):
 			favourites = Favourite.query.filter(Favourite.user_id == user.id).all()
 			return {'all': favourites}
 		except Exception as e:
-			logger.error(e)
+			log.exception(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
 	# data synchronization - post and get updates
@@ -92,7 +90,7 @@ class FavouritesApi(Resource):
 			db.session.commit()
 			return {'updated': updated, 'deleted': deleted}
 		except Exception as e:
-			logger.error(e)
+			log.exception(e)
 			db.session.rollback()
 			return {'state': 'fail', 'message': str(e)}, 500
 
@@ -117,6 +115,6 @@ class FavouritesApi(Resource):
 			db.session.flush()
 			db.session.commit()
 		except Exception as e:
-			logger.error(e)
+			log.exception(e)
 			db.session.rollback()
 			return {'state': 'fail', 'message': str(e)}, 500

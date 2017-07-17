@@ -1,20 +1,17 @@
 from datetime import datetime
 
-import logging
 from flask import json
 from flask_restful import Resource, reqparse, marshal_with
 
-from app import db
+from app import db, log
 from common.auth import auth_required
-from common.models import History, Token, Manga, Deleted
+from common.models import History, Manga, Deleted
 from common.schemas import history_schema, base_schema
 
 parser = reqparse.RequestParser()
 parser.add_argument('updated')
 parser.add_argument('deleted')
 parser.add_argument('id', type=int)
-
-logger = logging.getLogger(__name__)
 
 
 class HistoryApi(Resource):
@@ -26,7 +23,7 @@ class HistoryApi(Resource):
 			history = History.query.filter(History.user_id == token.user_id).all()
 			return {'all': history}
 		except Exception as e:
-			logger.error(e)
+			log.error(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
 	# data synchronization - post and get updates
@@ -94,7 +91,7 @@ class HistoryApi(Resource):
 			return {'updated': updated, 'deleted': deleted}
 		except Exception as e:
 			db.session.rollback()
-			logger.exception(e)
+			log.exception(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
 	# delete one item from history
@@ -118,6 +115,6 @@ class HistoryApi(Resource):
 			db.session.flush()
 			db.session.commit()
 		except Exception as e:
-			logger.error(e)
+			log.exception(e)
 			db.session.rollback()
 			return {'state': 'fail', 'message': str(e)}, 500
