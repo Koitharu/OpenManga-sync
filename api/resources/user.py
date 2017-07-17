@@ -2,7 +2,10 @@ import hashlib
 import uuid
 
 import logging
+from datetime import datetime
+
 from flask_restful import Resource, reqparse, marshal_with
+from werkzeug import item
 
 from app import db
 from common.models import Token, User
@@ -14,6 +17,7 @@ parser.add_argument('id', type=int)
 parser.add_argument('password')
 parser.add_argument('device')
 parser.add_argument('self', type=int, choices=(0, 1), default=0)
+parser.add_argument('expires', type=int)
 parser.add_argument('X-AuthToken', location='headers')
 
 logger = logging.getLogger(__name__)
@@ -46,6 +50,8 @@ class UserApi(Resource):
 				logger.info("Invalid login/password")
 				return {'state': 'fail', 'message': 'No such user or password invalid'}
 			new_token = Token(token=str(uuid.uuid4()), user_id=user.id, device=args['device'])
+			if args['expires'] is not None:
+				new_token.expires_at = datetime.fromtimestamp(args['expires'] / 1000.0)
 			db.session.add(new_token)
 			db.session.commit()
 			logger.info("Created new token: %s" % new_token.token)
@@ -63,6 +69,8 @@ class UserApi(Resource):
 			new_user = User(login=args['login'], password=pass_md5)
 			db.session.add(new_user)
 			new_token = Token(token=str(uuid.uuid4()), user=new_user, device=args['device'])
+			if args['expires'] is not None:
+				new_token.expires_at = datetime.fromtimestamp(args['expires'] / 1000.0)
 			db.session.add(new_token)
 			db.session.commit()
 			return {'token': new_token.token}
