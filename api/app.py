@@ -3,6 +3,7 @@
 from flask import Flask
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS, cross_origin
 
 from release_config import ReleaseConfig
 
@@ -11,6 +12,7 @@ app = Flask(__name__)
 api = Api(app)
 app.config.from_object(ReleaseConfig)
 db = SQLAlchemy(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 if __name__ == '__main__':
 	from resources.user import UserApi
