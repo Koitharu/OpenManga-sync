@@ -41,10 +41,12 @@ class UserApi(Resource):
 			pass_md5 = hashlib.md5(args['password'].encode('utf-8')).hexdigest()
 			user = User.query.filter(User.login == args['login'], User.password == pass_md5).one_or_none()
 			if user is None:
+				logger.info("Invalid login/password")
 				return {'state': 'fail', 'message': 'No such user or password invalid'}
 			new_token = Token(token=str(uuid.uuid4()), user_id=user.id, device=args['device'])
 			db.session.add(new_token)
 			db.session.commit()
+			logger.info("Created new token: %s" % new_token.token)
 			return {'token': new_token.token}
 		except Exception as e:
 			db.session.rollback()

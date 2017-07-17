@@ -16,7 +16,7 @@ app = Flask(__name__)
 api = Api(app)
 app.config.from_object(ReleaseConfig)
 db = SQLAlchemy(app)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 if __name__ == '__main__':
 	from resources.user import UserApi
