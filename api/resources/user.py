@@ -10,7 +10,7 @@ from common.schemas import devices_schema, token_schema, base_schema
 
 parser = reqparse.RequestParser()
 parser.add_argument('login')
-parser.add_argument('id')
+parser.add_argument('id', type=int)
 parser.add_argument('password')
 parser.add_argument('device')
 parser.add_argument('self', type=int, choices=(0, 1), default=0)
