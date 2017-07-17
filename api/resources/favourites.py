@@ -1,16 +1,19 @@
+import logging
 from datetime import datetime
 
 from flask import json
 from flask_restful import Resource, reqparse, marshal_with
 
 from app import db
-from common.models import History, Token, Manga, Favourite, Deleted
-from common.schemas import history_schema, favourites_schema
+from common.models import Token, Manga, Favourite, Deleted
+from common.schemas import favourites_schema
 
 parser = reqparse.RequestParser()
 parser.add_argument('X-AuthToken', location='headers')
 parser.add_argument('updated')
 parser.add_argument('deleted')
+
+logger = logging.getLogger(__name__)
 
 
 class FavouritesApi(Resource):
@@ -25,7 +28,7 @@ class FavouritesApi(Resource):
 			favourites = Favourite.query.filter(Favourite.user_id == user.id).all()
 			return {'all': favourites}
 		except Exception as e:
-			print(e)
+			logger.error(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
 	@marshal_with(favourites_schema)
@@ -90,6 +93,6 @@ class FavouritesApi(Resource):
 			db.session.commit()
 			return {'updated': updated, 'deleted': deleted}
 		except Exception as e:
-			print(e)
+			logger.error(e)
 			db.session.rollback()
 			return {'state': 'fail', 'message': str(e)}, 500

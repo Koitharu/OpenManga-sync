@@ -1,6 +1,7 @@
 import hashlib
 import uuid
 
+import logging
 from flask_restful import Resource, reqparse, marshal_with
 
 from app import db
@@ -15,6 +16,8 @@ parser.add_argument('device')
 parser.add_argument('self', type=int, choices=(0, 1), default=0)
 parser.add_argument('X-AuthToken', location='headers')
 
+logger = logging.getLogger(__name__)
+
 
 class UserApi(Resource):
 	@marshal_with(devices_schema)
@@ -28,6 +31,7 @@ class UserApi(Resource):
 			tokens = tokens.order_by(Token.created_at.desc()).all()
 			return {'devices': tokens}
 		except Exception as e:
+			logger.error(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
 	@marshal_with(token_schema)
@@ -59,6 +63,7 @@ class UserApi(Resource):
 			return {'token': new_token.token}
 		except Exception as e:
 			db.session.rollback()
+			logger.error(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
 	@marshal_with(base_schema)
@@ -76,4 +81,5 @@ class UserApi(Resource):
 			return {}
 		except Exception as e:
 			db.session.rollback()
+			logger.error(e)
 			return {'state': 'fail', 'message': str(e)}, 500

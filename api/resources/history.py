@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import logging
 from flask import json
 from flask_restful import Resource, reqparse, marshal_with
 
@@ -11,6 +12,8 @@ parser = reqparse.RequestParser()
 parser.add_argument('X-AuthToken', location='headers')
 parser.add_argument('updated')
 parser.add_argument('deleted')
+
+logger = logging.getLogger(__name__)
 
 
 class HistoryApi(Resource):
@@ -25,7 +28,7 @@ class HistoryApi(Resource):
 			history = History.query.filter(History.user_id == user.id).all()
 			return {'all': history}
 		except Exception as e:
-			print(e)
+			logger.error(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 
 	@marshal_with(history_schema)
@@ -93,6 +96,6 @@ class HistoryApi(Resource):
 			db.session.commit()
 			return {'updated': updated, 'deleted': deleted}
 		except Exception as e:
-			print(e)
 			db.session.rollback()
+			logger.exception(e)
 			return {'state': 'fail', 'message': str(e)}, 500
