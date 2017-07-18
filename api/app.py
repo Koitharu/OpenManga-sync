@@ -30,7 +30,7 @@ if __name__ == '__main__':
 	from resources.favourites import FavouritesApi
 
 	app.logger.addHandler(handler)
-	api.add_resource(UserApi, '/api/user')
-	api.add_resource(HistoryApi, '/api/history')
-	api.add_resource(FavouritesApi, '/api/favourites')
+	api.add_resource(UserApi, '/api/v1/user')
+	api.add_resource(HistoryApi, '/api/v1/history')
+	api.add_resource(FavouritesApi, '/api/v1/favourites')
 	app.run(host=app.config['HOST_IP'])
