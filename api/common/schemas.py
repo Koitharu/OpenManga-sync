@@ -72,3 +72,9 @@ favourites_schema = {
 }
 
 favourites_schema.update(base_schema)
+
+mangas_schema = {
+	'all': fields.List(fields.Nested(manga_schema, default=[]), default=[])
+}
+
+mangas_schema.update(base_schema)
