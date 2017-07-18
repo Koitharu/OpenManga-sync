@@ -13,7 +13,7 @@ from release_config import ReleaseConfig
 logfile = os.path.dirname(os.path.realpath(__file__)) + u'/../logs/main.log'
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
-handler = RotatingFileHandler(logfile, maxBytes=20, backupCount=5)
+handler = RotatingFileHandler(logfile, maxBytes=5120, backupCount=5)
 handler.setFormatter(logging.Formatter(u'%(filename)s[LINE:%(lineno)d] %(levelname)-8s [%(asctime)s]  %(message)s'))
 log.addHandler(handler)
 
