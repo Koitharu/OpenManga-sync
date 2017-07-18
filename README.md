@@ -2,21 +2,31 @@
 
 ##### User
 ```
-/api/user
+/api/v1/user
 ```
-| Method | Description                           | Params                         | Auth required | Result                                         |
-|--------|---------------------------------------|--------------------------------|---------------|------------------------------------------------|
-| GET    | Get all devices, associated with user |                -               |       +       | devices: [{ device: String, created_at: Long }] |
-| POST   | Authorization                         | login: String, password: String |               | token: String                                  |
-| PUT    | Registration                          | login: String, password: String |               | token: String                                  |
-
+| Method | Description             | Params                          | Auth required |
+|--------|-------------------------|---------------------------------|---------------|
+| GET    | Get all active sessions |           self: (1, 0)          |       +       |
+| POST   | Sign in                 | login: String, password: String |               |
+| PUT    | Sign up                 | login: String, password: String |               |
+| DELETE | Close session           | self: (1, 0), id: Int           |       +       |
 
 ##### History
 ```
-/api/history
+/api/v1/history
 ```
-| Method | Description                 | Params            | Auth required | Result                                                                                                                                                                        |
-|--------|-----------------------------|-------------------|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| GET    | Get new or updated items    |  timestamp: Long  |       +       | data: [{id: Int,name: String,subtitle: String,summary: String,preview: String,provider: String,path: String,rating: Int,timestamp: Int, chapter: Int, page: Int, isweb: Int}] |
-| POST   | Store new or updated mangas |                   |       +       |                                                                                                                                                                               |
-| DELETE | Remove history items        | data: [{id: Int}] |       +       |                                                                                                                                                                               |
+| Method | Description                                             | Params                   | Auth required |
+|--------|---------------------------------------------------------|--------------------------|---------------|
+| GET    | Get all history                                         |                          |       +       |
+| POST   | Store new, updated and deleted items and return another | updated: [], deleted: [] |       +       |
+| DELETE | Delete one item from history                            | id: Int                  |       +       |
+
+##### Favourites
+```
+/api/v1/favourites
+```
+| Method | Description                                             | Params                   | Auth required |
+|--------|---------------------------------------------------------|--------------------------|---------------|
+| GET    | Get all favourites                                      |                          |       +       |
+| POST   | Store new, updated and deleted items and return another | updated: [], deleted: [] |       +       |
+| DELETE | Delete one item from favourites                         | id: Int                  |       +       |
