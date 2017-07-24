@@ -24,6 +24,7 @@ def auth_required(f):
 				return {'state': 'fail', 'message': 'Token was expired'}, 403
 			return f(token=token, *args, **kwargs)
 		except Exception as e:
+			db.session.rollback()
 			log.exception(e)
 			return {'state': 'fail', 'message': str(e)}, 500
 

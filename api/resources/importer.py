@@ -11,12 +11,14 @@ def java_hash_code(str):
 		h = (31 * h + ord(c)) & 0xFFFFFFFF
 	return ((h + 0x80000000) & 0xFFFFFFFF) - 0x80000000
 
+
 def provider_name(url):
 	domain = url.split('/')[2]
 	if domain == 'readmanga.me':
 		return 'org.nv95.openmanga.providers.ReadmangaRuProvider'
 	else:
 		return None
+
 
 class GroupleImport(Resource):
 	@marshal_with(mangas_schema)
