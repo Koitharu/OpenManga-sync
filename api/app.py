@@ -7,8 +7,8 @@ from flask_cors import CORS
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 
-from release_config import ReleaseConfig
-
+import config
+from config import Config
 # init logging
 logfile = os.path.dirname(os.path.realpath(__file__)) + u'/../logs/main.log'
 log = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ log.addHandler(handler)
 # init flask
 app = Flask(__name__)
 api = Api(app)
-app.config.from_object(ReleaseConfig)
+app.config.from_object(Config)
 db = SQLAlchemy(app)
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
