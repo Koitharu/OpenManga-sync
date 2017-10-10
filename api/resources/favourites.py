@@ -4,10 +4,10 @@ from datetime import datetime
 from flask import json
 from flask_restful import Resource, reqparse, marshal_with
 
-from app import db, log
-from common.auth import auth_required
-from common.models import Token, Manga, Favourite, Deleted
-from common.schemas import favourites_schema, base_schema
+from api import db, log
+from api.common.auth import auth_required
+from api.common.models import Token, Manga, Favourite, Deleted
+from api.common.schemas import favourites_schema, base_schema
 
 parser = reqparse.RequestParser()
 parser.add_argument('updated')

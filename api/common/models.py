@@ -1,6 +1,6 @@
 from sqlalchemy import func
 
-from app import db
+from api import db
 
 
 class User(db.Model):

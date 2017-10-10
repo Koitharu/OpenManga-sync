@@ -4,10 +4,10 @@ from datetime import datetime
 
 from flask_restful import Resource, reqparse, marshal_with
 
-from app import db, log
-from common.auth import auth_required
-from common.models import Token, User
-from common.schemas import devices_schema, token_schema, base_schema
+from api import db, log
+from api.common.auth import auth_required
+from api.common.models import Token, User
+from api.common.schemas import devices_schema, token_schema, base_schema
 
 parser = reqparse.RequestParser()
 parser.add_argument('login')
@@ -16,7 +16,6 @@ parser.add_argument('password')
 parser.add_argument('device')
 parser.add_argument('self', type=int, choices=(0, 1), default=0)
 parser.add_argument('expires', type=int)
-
 
 
 class UserApi(Resource):

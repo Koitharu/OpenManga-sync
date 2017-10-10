@@ -3,8 +3,8 @@ from functools import wraps
 
 from flask import request
 
-from app import db, log
-from common.models import Token
+from api import db, log
+from api.common.models import Token
 
 
 def auth_required(f):
