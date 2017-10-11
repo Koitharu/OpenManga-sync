@@ -2,7 +2,7 @@ import requests
 from flask_restful import Resource, marshal_with
 from lxml import html
 
-from common.schemas import mangas_schema
+from api.common.schemas import mangas_schema
 
 
 def java_hash_code(str):
