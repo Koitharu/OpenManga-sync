@@ -2,12 +2,14 @@ import hashlib
 import uuid
 from datetime import datetime
 
-from flask_restful import Resource, reqparse, marshal_with
+from flask_restful import Resource, marshal_with, reqparse
 
-from api import db, log
-from api.common.auth import auth_required
-from api.common.models import Token, User
-from api.common.schemas import devices_schema, token_schema, base_schema
+from api import log, db
+from api.auth import authorized_only
+from api.models.token import Token
+from api.models.user import User
+from api.constants import *
+from api.schemas import devices_schema, token_schema, base_schema
 
 parser = reqparse.RequestParser()
 parser.add_argument('login')
@@ -19,9 +21,8 @@ parser.add_argument('expires', type=int)
 
 
 class UserApi(Resource):
-	# get all user sessions
 	@marshal_with(devices_schema)
-	@auth_required
+	@authorized_only
 	def get(self, token):
 		try:
 			args = parser.parse_args()
@@ -33,18 +34,20 @@ class UserApi(Resource):
 			return {'devices': tokens}
 		except Exception as e:
 			log.exception(e)
-			return {'state': 'fail', 'message': str(e)}, 500
+			return {'success': False, 'errno': ERRNO_INTERNAL_UNKNOWN}, 500
 
 	# sign in
 	@marshal_with(token_schema)
 	def post(self):
 		try:
 			args = parser.parse_args()
+			if (args['device'] is None) or (args['login'] is None) or (args['password'] is None):
+				return {'success': False, 'errno': ERRNO_FIELDS_ABSENT}, 400
 			pass_md5 = hashlib.md5(args['password'].encode('utf-8')).hexdigest()
 			user = User.query.filter(User.login == args['login'], User.password == pass_md5).one_or_none()
 			if user is None:
 				log.info("Invalid login/password")
-				return {'state': 'fail', 'message': 'No such user or password invalid'}
+				return {'success': False, 'errno': ERRNO_INVALID_PASSWORD}, 403
 			new_token = Token(token=str(uuid.uuid4()), user_id=user.id, device=args['device'])
 			if args['expires'] is not None:
 				new_token.expires_at = datetime.fromtimestamp(args['expires'] / 1000.0)
@@ -55,13 +58,15 @@ class UserApi(Resource):
 		except Exception as e:
 			db.session.rollback()
 			log.exception(e)
-			return {'state': 'fail', 'message': str(e)}, 500
+			return {'success': False, 'errno': ERRNO_INTERNAL_UNKNOWN}, 500
 
 	# sign up
 	@marshal_with(token_schema)
 	def put(self):
 		try:
 			args = parser.parse_args()
+			if (args['device'] is None) or (args['login'] is None) or (args['password'] is None):
+				return {'success': False, 'errno': ERRNO_FIELDS_ABSENT}, 400
 			pass_md5 = hashlib.md5(args['password'].encode('utf-8')).hexdigest()
 			new_user = User(login=args['login'], password=pass_md5)
 			db.session.add(new_user)
@@ -74,11 +79,11 @@ class UserApi(Resource):
 		except Exception as e:
 			db.session.rollback()
 			log.error(e)
-			return {'state': 'fail', 'message': str(e)}, 500
+			return {'success': False, 'errno': ERRNO_INTERNAL_UNKNOWN}, 500
 
 	# close session(remove token)
 	@marshal_with(base_schema)
-	@auth_required
+	@authorized_only
 	def delete(self, token):
 		try:
 			args = parser.parse_args()
@@ -88,13 +93,13 @@ class UserApi(Resource):
 			else:
 				token_rm = Token.query.filter(Token.id == args['id']).one_or_none()
 			if token_rm is None:
-				return {'state': 'fail', 'message': 'Invalid device id'}, 400
+				return {'success': False, 'errno': ERRNO_INVALID_DEVICE}, 400
 			if user.id != token_rm.user.id:
-				return {'state': 'fail', 'message': 'Invalid token'}, 403
+				return {'success': False, 'errno': ERRNO_TOKEN_INVALID}, 403
 			db.session.delete(token_rm)
 			db.session.commit()
 			return {}
 		except Exception as e:
 			db.session.rollback()
 			log.exception(e)
-			return {'state': 'fail', 'message': str(e)}, 500
+			return {'success': False, 'errno': ERRNO_INTERNAL_UNKNOWN}, 500

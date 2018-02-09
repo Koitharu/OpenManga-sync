@@ -4,28 +4,31 @@ from functools import wraps
 from flask import request
 
 from api import db, log
-from api.common.models import Token
+from api.models.token import Token
+from api.constants import *
 
 
-def auth_required(f):
+def authorized_only(f):
 	@wraps(f)
 	def decorated(*args, **kwargs):
 		try:
-			token = request.headers['X-AuthToken']
+			if 'X-Auth-Token' not in request.headers:
+				return {'success': False, 'errno': ERRNO_TOKEN_ABSENT}, 403
+			token = request.headers['X-Auth-Token']
 			if token is None:
-				return {'state': 'fail', 'message': 'Authorization required'}, 403
+				return {'success': False, 'errno': ERRNO_TOKEN_ABSENT}, 403
 			token = Token.query.get(token)
 			if token is None:
-				return {'state': 'fail', 'message': 'Invalid token'}, 403
+				return {'success': False, 'errno': ERRNO_TOKEN_INVALID}, 403
 			if token.expires_at is not None and token.expires_at < datetime.datetime.now():
 				token.delete()
 				db.session.flush()
 				db.session.commit()
-				return {'state': 'fail', 'message': 'Token was expired'}, 403
+				return {'success': False, 'errno': ERRNO_TOKEN_OUTDATED}, 403
 			return f(token=token, *args, **kwargs)
 		except Exception as e:
 			db.session.rollback()
 			log.exception(e)
-			return {'state': 'fail', 'message': str(e)}, 500
+			return {'success': False, 'errno': ERRNO_INTERNAL_UNKNOWN}, 500
 
 	return decorated
